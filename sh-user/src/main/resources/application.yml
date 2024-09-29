@@ -1,0 +1,28 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: USER-SERVICE
+  security:
+    jwt:
+      secret: PFVWsOFLFrOjrPSZD6RvSA9AdoyOR2to4AgW4MSrE1I=
+      expiration: 86400000 # 1 day in milliseconds
+  datasource:
+    url: jdbc:mysql://localhost:3306/sh_user_db?createDatabaseIfNotExist=true
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
