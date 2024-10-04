@@ -29,7 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Finds a user by their authService user ID.
      *
-     * @param authUserId the user ID from auth_SERVICE
+     * @param authUserId the user ID from AUTH_SERVICE
      * @return Optional containing the User if found
      */
     Optional<User> findByAuthUserId(Long authUserId);

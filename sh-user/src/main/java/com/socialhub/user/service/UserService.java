@@ -25,9 +25,9 @@ public class UserService {
     private final ProfileRepository profileRepository;
 
     /**
-     * Creates a user profile in user_SERVICE based on the registered user details from auth_SERVICE.
+     * Creates a user profile in user_SERVICE based on the registered user details from AUTH_SERVICE.
      *
-     * @param authResponse UserDetailsResponse from auth_SERVICE after registration
+     * @param authResponse UserDetailsResponse from AUTH_SERVICE after registration
      */
     @Transactional
     public void createUserProfile(UserDetailsResponse authResponse) {

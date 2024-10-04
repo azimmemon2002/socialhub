@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 /**
- * DTO representing the response from auth_SERVICE's /auth/login endpoint.
+ * DTO representing the response from AUTH_SERVICE's /auth/login endpoint.
  * Contains both the JWT token and its type.
  */
 @Data

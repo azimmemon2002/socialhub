@@ -5,7 +5,7 @@ import lombok.*;
 
 /**
  * Entity representing a user in user_SERVICE.
- * Linked to auth_SERVICE via authUserId.
+ * Linked to AUTH_SERVICE via authUserId.
  */
 @Entity
 @Table(name = "users")
@@ -20,7 +20,7 @@ public class User {
     private Long id;
 
     /**
-     * Reference to the user in auth_SERVICE.
+     * Reference to the user in AUTH_SERVICE.
      */
     @Column(unique = true, nullable = false)
     private Long authUserId;

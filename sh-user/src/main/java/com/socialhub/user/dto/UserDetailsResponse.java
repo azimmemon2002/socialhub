@@ -5,7 +5,7 @@ import lombok.*;
 import java.util.Set;
 
 /**
- * DTO representing user details returned from auth_SERVICE.
+ * DTO representing user details returned from AUTH_SERVICE.
  */
 @Getter
 @Setter
