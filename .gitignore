@@ -68,3 +68,4 @@ Thumbs.db
 # Other
 *.env
 .env.*
+!.env.example

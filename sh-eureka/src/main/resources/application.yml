@@ -1,3 +1,4 @@
+# Default configuration
 server:
   port: 8761
 
@@ -11,3 +12,25 @@ eureka:
     fetch-registry: false
     service-url:
       defaultZone: http://localhost:${server.port}/eureka/
+
+# Docker profile configuration
+---
+
+server:
+  port: ${PORT}
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+
+logging:
+  level:
+    root: INFO
