@@ -11,6 +11,7 @@ services:
       PORT: 8762
     networks:
       - socialhub-network
+    restart: on-failure:5 
 
   mysql-db:
     image: mysql:8.0
@@ -26,6 +27,11 @@ services:
     volumes:
       - db-data:/var/lib/mysql
       - ./mysql-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   sh-auth-service:
     build:
@@ -42,10 +48,13 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
-      - sh-eureka-server
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
+      sh-eureka-server:
+        condition: service_started
     networks:
       - socialhub-network
+    restart: on-failure:5 
 
   sh-user-service:
     build:
@@ -64,11 +73,15 @@ services:
       AUTH_SERVICE_URL: http://sh-auth-service:8091
       API_GATEWAY_URL: http://sh-api-gateway:8090
     depends_on:
-      - sh-eureka-server
-      - mysql-db
-      - sh-auth-service
+      mysql-db:
+        condition: service_healthy
+      sh-eureka-server:
+        condition: service_started
+      sh-auth-service:
+        condition: service_started
     networks:
       - socialhub-network
+    restart: on-failure:5 
 
   sh-api-gateway:
     build:
@@ -82,11 +95,15 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://sh-eureka-server:8762/eureka/
     depends_on:
-      - sh-eureka-server
-      - sh-auth-service
-      - sh-user-service
+      sh-eureka-server:
+        condition: service_started
+      sh-auth-service:
+        condition: service_started
+      sh-user-service:
+        condition: service_started
     networks:
       - socialhub-network
+    restart: on-failure:5 
 
 networks:
   socialhub-network:
