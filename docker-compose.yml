@@ -1,0 +1,113 @@
+services:
+  sh-eureka-server:
+    build: ./sh-eureka
+    container_name: sh-eureka-server
+    ports:
+      - "8762:8762"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      PORT: 8762
+    networks:
+      - socialhub-network
+    restart: on-failure:5
+    volumes:
+      - maven-cache:/root/.m2  
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    networks:
+      - socialhub-network
+    command: --default-authentication-plugin=mysql_native_password --init-file=/docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./mysql-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sh-auth-service:
+    build: ./sh-auth
+    container_name: sh-auth-service
+    ports:
+      - "8091:8091"
+    environment:
+      PORT: 8091
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://sh-eureka-server:8762/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/sh_auth_db?serverTimezone=UTC&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      sh-eureka-server:
+        condition: service_started
+    networks:
+      - socialhub-network
+    restart: on-failure:5
+    volumes:
+      - maven-cache:/root/.m2  
+
+  sh-user-service:
+    build: ./sh-user
+    container_name: sh-user-service
+    ports:
+      - "8092:8092"
+    environment:
+      PORT: 8092
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://sh-eureka-server:8762/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/sh_user_db?serverTimezone=UTC&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      AUTH_SERVICE_URL: http://sh-auth-service:8091
+      API_GATEWAY_URL: http://sh-api-gateway:8090
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      sh-eureka-server:
+        condition: service_started
+      sh-auth-service:
+        condition: service_started
+    networks:
+      - socialhub-network
+    restart: on-failure:5
+    volumes:
+      - maven-cache:/root/.m2  
+
+  sh-api-gateway:
+    build: ./sh-api-gateway
+    container_name: sh-api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: 8090
+      SPRING_PROFILES_ACTIVE: docker
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://sh-eureka-server:8762/eureka/
+    depends_on:
+      sh-eureka-server:
+        condition: service_started
+      sh-auth-service:
+        condition: service_started
+      sh-user-service:
+        condition: service_started
+    networks:
+      - socialhub-network
+    restart: on-failure:5
+    volumes:
+      - maven-cache:/root/.m2  
+
+networks:
+  socialhub-network:
+
+volumes:
+  db-data:
+  maven-cache:  
